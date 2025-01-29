@@ -81,6 +81,10 @@ Connected using protocol: BEDROCK_RAKNET
 
 参阅[MineStat](https://github.com/FragLand/minestat/blob/master/Python/README.md)
 
+为了方便使用，我们添加了一些额外的属性
+|属性名|说明|
+|---|---|
+|`protocol_version`|服务器协议版本号|
 
 ## 感谢
 
