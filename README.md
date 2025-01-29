@@ -19,19 +19,19 @@ asyncio.run(main())
 # 输出
 # [<minestatpp.MineStat object at 0x00000175FC3D62D0>, <minestatpp.MineStat object at 0x00000175FF92F5D0>]
 ```
-**不需要使用`online`参数判断服务器是否在线**，因为如果服务器不可用，将会返回一个空列表，这时可以使用`if`判断服务器是否可用
+**不需要使用`online`参数判断服务器是否在线**，因为如果服务器不可用，将会返回`ConStatus`，这时可以使用`isinstance`判断服务器是否可用
 ```python
-from minestatpp import Checker
+from minestatpp import Checker, ConStatus
 import asyncio
 
 
 async def main():
     ms = Checker("offline.server.address")
     result = await ms.check()
-    if result:
+    if not isinstance(result, ConStatus):
         print(result)
     else:
-        print("服务器不在线")
+        print("服务器不在线，状态:", result)
 
 asyncio.run(main())
 ```

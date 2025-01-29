@@ -1160,7 +1160,7 @@ class Checker:
             await loop.run_in_executor(None, self.get_bedrock, ip, port, ip_type, refer),
         ]
 
-    async def check(self) -> list[MineStat]:
+    async def check(self) -> list[MineStat] | ConnStatus:
         """
         异步函数，根据初始化类时传入的IP和端口获取查询成功的MineStat实例列表。
 
@@ -1177,8 +1177,19 @@ class Checker:
             )
         )
         results = [item for sublist in results for item in sublist]
-
-        return [ms for ms in results if ms is not None]
+        result = [ms for ms in results if not isinstance(ms, ConnStatus)]
+        if not result:
+           result.append(
+               next(
+                   (
+                       ms
+                       for ms in results
+                       if ms != ConnStatus.CONNFAIL
+                   ),
+                   ConnStatus.CONNFAIL,
+               )
+           )
+        return result
 
     def get_bedrock(
         self,
@@ -1200,7 +1211,7 @@ class Checker:
         result = MineStat(host, port, self.timeout,
                           SlpProtocols.BEDROCK_RAKNET, refer, v6)
 
-        return result if result.online else None
+        return result if result.online else result.connection_status
 
     def get_java(self,
                  host: str, port: int, ip_type: str, refer: str
@@ -1238,7 +1249,7 @@ class Checker:
             result = MineStat(host, port, self.timeout,
                               SlpProtocols.JSON, refer, v6)
 
-        return result if result.online else None
+        return result if result.online else result.connection_status
 
     async def is_validity_address(self, address: str) -> bool:
         """
