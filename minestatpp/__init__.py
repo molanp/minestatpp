@@ -1126,6 +1126,13 @@ class MineStat:
 
 class Checker:
     def __init__(self, ip: str, port: int = 0, timeout: int = 5):
+        """Initializes Checker with given IP, port, and timeout.
+
+        Args:
+            ip (str): The IP address of the Minecraft server.
+            port (int, optional): The port of the server. Defaults to 0.'0' means auto-detect.
+            timeout (int, optional): The timeout for queries. Defaults to 5.
+        """
         self.address = ip
         self.port = port
         self.timeout = timeout
@@ -1141,7 +1148,6 @@ class Checker:
         - port (int): 服务器的端口。
         - ip_type (int): 服务器的IP类型。
         - refer (str): 服务器来源地址
-        - timeout (int): 请求超时时间，默认为5秒。
 
         返回:
         - list: 包含Java版和Bedrock版服务器信息的列表。
@@ -1156,12 +1162,7 @@ class Checker:
 
     async def check(self) -> list[MineStat]:
         """
-        异步函数，根据IP和端口获取查询成功的MineStat实例列表。
-
-        参数:
-        - ip (str): 服务器的IP地址。
-        - port (int): 服务器的端口。
-        - timeout (int, 可选): 超时时间，默认为5秒。
+        异步函数，根据初始化类时传入的IP和端口获取查询成功的MineStat实例列表。
 
         返回:
         - list: 包含MineStat实例的列表。
@@ -1191,7 +1192,6 @@ class Checker:
         - port: 服务器的端口号。
         - ip_type: 服务器地址类型。
         - refer: 服务器地址来源。
-        - timeout: 连接超时时间，默认为5秒。
 
         返回:
         - MineStat实例，包含服务器状态信息，如果服务器在线的话；否则可能返回None。
@@ -1213,7 +1213,6 @@ class Checker:
         - port: 服务器的端口号。
         - ip_type: 服务器地址类型。
         - refer: 服务器地址来源。
-        - timeout: 连接超时时间，默认为5秒。
 
         返回:
         - MineStat 实例，包含服务器状态信息，如果服务器在线的话；否则可能返回 None。
