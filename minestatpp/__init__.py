@@ -970,8 +970,15 @@ class MineStat:
         except struct.error:
             return ConnStatus.UNKNOWN
 
-        # Receive full payload and close socket
-        payload_raw = bytearray(self._recv_exact(sock, content_len * 2))
+        try:
+            # Receive full payload and close socket
+            payload_raw = bytearray(self._recv_exact(sock, content_len * 2))
+        except TimeoutError:
+            return ConnStatus.TIMEOUT
+        except (ConnectionResetError, ConnectionAbortedError):
+            return ConnStatus.UNKNOWN
+        except OSError:
+            return ConnStatus.CONNFAIL
         sock.close()
 
         # Set protocol version
@@ -1037,6 +1044,8 @@ class MineStat:
             self._extracted_from_beta_query_19(sock)
         except TimeoutError:
             return ConnStatus.TIMEOUT
+        except (ConnectionResetError, ConnectionAbortedError):
+            return ConnStatus.UNKNOWN
         except OSError:
             return ConnStatus.CONNFAIL
 
