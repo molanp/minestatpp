@@ -381,11 +381,9 @@ class MineStat:
 
         # Create socket with type DGRAM (for UDP)
         if self.use_ipv6:
-            sock = socket.socket(
-                socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         else:
-            sock = socket.socket(
-                socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.settimeout(self.timeout)
 
         try:
@@ -439,8 +437,7 @@ class MineStat:
                 return ConnStatus.UNKNOWN
 
             # Server ID string length
-            response_id_string_length = struct.unpack(
-                ">h", response_stream.read(2))
+            response_id_string_length = struct.unpack(">h", response_stream.read(2))
 
             # Receive server ID string
             response_id_string = response_stream.read().decode("utf8")
@@ -528,8 +525,7 @@ class MineStat:
 
         # Create UDP socket and set timeout
         if self.use_ipv6:
-            sock = socket.socket(
-                socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+            sock = socket.socket(socket.AF_INET6, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         else:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         sock.settimeout(self.timeout)
@@ -665,8 +661,7 @@ class MineStat:
                 # example: ["Paper on 1.19.3: AnExampleMod 7.3", "AnotherExampleMod 4.2", ...]
                 # more information on https://wiki.vg/Query
                 if ":" in self.plugins[0]:  # type: ignore
-                    self.version, self.plugins[0] = self.plugins[0].split(
-                        ": ")  # type: ignore
+                    self.version, self.plugins[0] = self.plugins[0].split(": ")  # type: ignore
 
         # extract the name of the map the server is running on
         if "map" in stats:
@@ -807,8 +802,7 @@ class MineStat:
             self.favicon_b64 = payload_obj["favicon"]
             if self.favicon_b64:
                 self.favicon = str(
-                    base64.b64decode(self.favicon_b64.split(
-                        "base64,")[1]), "ISO-8859–1"
+                    base64.b64decode(self.favicon_b64.split("base64,")[1]), "ISO-8859–1"
                 )
         except KeyError:
             self.favicon_b64 = None
@@ -1011,8 +1005,7 @@ class MineStat:
 
         # - a fixed prefix '§1'
         # - the protocol version
-        self.protocol_version = int(
-            payload_list[1][1:]) if payload_list[1] else 0
+        self.protocol_version = int(payload_list[1][1:]) if payload_list[1] else 0
         # - the server version
         self.version = payload_list[2]
         # - the MOTD
@@ -1095,8 +1088,7 @@ class MineStat:
         # The first value it the server MOTD
         # This could contain '§' itself, thats the reason for the join here
         self.motd = "§".join(payload_list[:-2])
-        self.stripped_motd = self.motd_strip_formatting(
-            "§".join(payload_list[:-2]))
+        self.stripped_motd = self.motd_strip_formatting("§".join(payload_list[:-2]))
 
         # Set general version, as the protocol doesn't contain the server version
         self.version = ">=1.8b/1.3"
@@ -1147,8 +1139,7 @@ class Checker:
         self.timeout = timeout
         self.auto_port = self.port == 0
 
-    async def get_servers(
-            self, ip, port, ip_type, refer) -> list[MineStat | None]:
+    async def get_servers(self, ip, port, ip_type, refer) -> list[MineStat | None]:
         """
         获取Java版和Bedrock版的MC服务器信息。
 
@@ -1163,10 +1154,16 @@ class Checker:
         """
         loop = asyncio.get_event_loop()
         if ip_type.startswith("SRV"):
-            return [await loop.run_in_executor(None, self.get_java, ip, port, ip_type, refer)]
+            return [
+                await loop.run_in_executor(
+                    None, self.get_java, ip, port, ip_type, refer
+                )
+            ]
         return [
             await loop.run_in_executor(None, self.get_java, ip, port, ip_type, refer),
-            await loop.run_in_executor(None, self.get_bedrock, ip, port, ip_type, refer),
+            await loop.run_in_executor(
+                None, self.get_bedrock, ip, port, ip_type, refer
+            ),
         ]
 
     async def check(self) -> list[MineStat] | ConnStatus:
@@ -1180,29 +1177,23 @@ class Checker:
         self.ip = ip_groups[0]
         results = await asyncio.gather(
             *(
-                self.get_servers(ip_group[0], ip_group[1], ip_group[2],
-                                 ip_group[3])
+                self.get_servers(ip_group[0], ip_group[1], ip_group[2], ip_group[3])
                 for ip_group in ip_groups
             )
         )
         results = [item for sublist in results for item in sublist]
         result = [ms for ms in results if not isinstance(ms, ConnStatus)]
         if not result:
-           result.append(
-               next(
-                   (
-                       ms
-                       for ms in results
-                       if ms != ConnStatus.CONNFAIL
-                   ),
-                   ConnStatus.CONNFAIL,
-               )
-           )
+            result.append(
+                next(
+                    (ms for ms in results if ms != ConnStatus.CONNFAIL),
+                    ConnStatus.CONNFAIL,
+                )
+            )
         return result
 
     def get_bedrock(
-        self,
-        host: str, port: int, ip_type: str, refer: str
+        self, host: str, port: int, ip_type: str, refer: str
     ) -> MineStat | None:
         """
         异步函数，用于通过指定的主机名、端口和超时时间获取Minecraft Bedrock版服务器状态。
@@ -1217,14 +1208,15 @@ class Checker:
         - MineStat实例，包含服务器状态信息，如果服务器在线的话；否则可能返回None。
         """
         v6 = "IPv6" in ip_type
-        result = MineStat(host, port, self.timeout,
-                          SlpProtocols.BEDROCK_RAKNET, refer, v6)
+        result = MineStat(
+            host, port, self.timeout, SlpProtocols.BEDROCK_RAKNET, refer, v6
+        )
 
         return result if result.online else result.connection_status
 
-    def get_java(self,
-                 host: str, port: int, ip_type: str, refer: str
-                 ) -> MineStat | None:
+    def get_java(
+        self, host: str, port: int, ip_type: str, refer: str
+    ) -> MineStat | None:
         """
         异步函数，用于通过指定的主机名、端口和超时时间获取Minecraft Java版服务器状态。
 
@@ -1240,23 +1232,21 @@ class Checker:
         v6 = "IPv6" in ip_type
 
         # Minecraft 1.4 & 1.5 (legacy SLP)
-        result = MineStat(host, port, self.timeout,
-                          SlpProtocols.LEGACY, refer, v6)
+        result = MineStat(host, port, self.timeout, SlpProtocols.LEGACY, refer, v6)
 
         # Minecraft Beta 1.8 to Release 1.3 (beta SLP)
         if result.connection_status not in [ConnStatus.CONNFAIL, ConnStatus.SUCCESS]:
-            result = MineStat(host, port, self.timeout,
-                              SlpProtocols.BETA, refer, v6)
+            result = MineStat(host, port, self.timeout, SlpProtocols.BETA, refer, v6)
 
         # Minecraft 1.6 (extended legacy SLP)
         if result.connection_status is not ConnStatus.CONNFAIL:
-            result = MineStat(host, port, self.timeout,
-                              SlpProtocols.EXTENDED_LEGACY, refer, v6)
+            result = MineStat(
+                host, port, self.timeout, SlpProtocols.EXTENDED_LEGACY, refer, v6
+            )
 
         # Minecraft 1.7+ (JSON SLP)
         if result.connection_status is not ConnStatus.CONNFAIL:
-            result = MineStat(host, port, self.timeout,
-                              SlpProtocols.JSON, refer, v6)
+            result = MineStat(host, port, self.timeout, SlpProtocols.JSON, refer, v6)
 
         return result if result.online else result.connection_status
 
@@ -1315,7 +1305,9 @@ class Checker:
             return False
 
         parts = address.split(".")
-        return not any(not part.isdigit() or not 0 <= int(part) <= 255 for part in parts)
+        return not any(
+            not part.isdigit() or not 0 <= int(part) <= 255 for part in parts
+        )
 
     async def is_ipv6(self, address: str) -> bool:
         """
@@ -1345,8 +1337,7 @@ class Checker:
             return "Domain"
 
     async def get_origin_address(
-        self,
-        domain: str, ip_port: int, is_resolve_srv=True
+        self, domain: str, ip_port: int = 0, is_resolve_srv=True
     ) -> list[tuple[str, int, str, str]]:
         """
         获取地址所解析的A或AAAA记录，如果传入不是域名直接返回。
@@ -1360,10 +1351,10 @@ class Checker:
 
         返回:
         - List[Tuple[str, int, str, str]]: 一个列表，包含一个元组，元组包含三个元素：
-          - 第一个元素是解析后的地址（字符串形式）。
-          - 第二个元素是地址的端口号（整数形式。
-          - 第三个元素是地址的类型（"IPv4" 或 "IPv6" 或 "SRV" 或 "SRV-IPv4" 或 "SRV-IPv6"）。
-          - 第四个元素是解析地址的来源域名或IP
+        - 第一个元素是解析后的地址（字符串形式）。
+        - 第二个元素是地址的端口号（整数形式。
+        - 第三个元素是地址的类型（"IPv4" 或 "IPv6" 或 "SRV" 或 "SRV-IPv4" 或 "SRV-IPv6"）。
+        - 第四个元素是解析地址的来源域名或IP
         """
         ip_type = await self.get_ip_type(domain)
         if ip_type != "Domain":
@@ -1378,18 +1369,39 @@ class Checker:
             with contextlib.suppress(
                 dns.resolver.NoAnswer, dns.resolver.NXDOMAIN, dns.exception.Timeout
             ):
-                srv_response = await resolver.resolve(f"_minecraft._tcp.{domain}", "SRV")
+                srv_response = await resolver.resolve(
+                    f"_minecraft._tcp.{domain}", "SRV"
+                )
                 for rdata in srv_response:
                     srv_address = str(rdata.target).rstrip(".")
                     srv_port = rdata.port
                     ip_type = await self.get_ip_type(srv_address)
                     if ip_type == "Domain":
-                        srv_address_ = await self.get_origin_address(srv_address, srv_port, False)
-                        data.extend([srv_address_[0][0], srv_address_[0][1], f"SRV-{ip_type}", srv_address_[0][3]])
-                        #data.extend(
-                            #[(addr, port, f"SRV-{ip_type}", refer) for addr, port, ip_type, refer in srv_address_])
+                        srv_address_ = await self.get_origin_address(
+                            srv_address, srv_port, False
+                        )
+                        srv_data = (
+                            srv_address_[0][0],
+                            srv_address_[0][1],
+                            f"SRV-{srv_address_[0][2]}",
+                            srv_address_[0][3],
+                        )
+                        # data.extend([(addr, port, f"SRV-{ip_type}", refer) for addr, port, ip_type, refer in srv_address_])
                     else:
-                        data.append((srv_address, srv_port, "SRV", domain))
+                        srv_data = (
+                            srv_address,
+                            srv_port,
+                            f"SRV-{ip_type}",
+                            domain,
+                        )
+                    if not any(
+                        entry[0] == srv_data[0]
+                        and entry[1] == srv_data[1]
+                        and entry[2].replace("SRV-", "")
+                        == srv_data[2].replace("SRV-", "")
+                        for entry in data
+                    ):
+                        data.append(srv_data)
                     break
 
         async def resolve_aaaa():
@@ -1411,10 +1423,8 @@ class Checker:
                     break
 
         if is_resolve_srv:
-            await asyncio.gather(resolve_srv(), resolve_aaaa(), resolve_a())
+            await asyncio.gather(resolve_aaaa(), resolve_a(), resolve_srv())
         else:
             await asyncio.gather(resolve_aaaa(), resolve_a())
-            
-        if not data:
-            data.append((domain, ip_port, ip_type, domain))
+
         return data
